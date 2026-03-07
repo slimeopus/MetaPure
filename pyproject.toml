@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "metadata-scrubber"
+name = "MetaPure"
 version = "0.1.0"
 description = "Утилита для удаления метаданных из файлов"
 authors = ["Denis"]
@@ -9,7 +9,7 @@ license = "MIT"
 python = "^3.10"
 Pillow = "^10.0"
 watchdog = "^3.0"
-pywin32 = "^300"
+pywin32 = "^300"  # Используется для интеграции с системным треем Windows, но не для уведомлений
 
 [build-system]
 requires = ["poetry-core"]
