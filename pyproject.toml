@@ -1,0 +1,16 @@
+[tool.poetry]
+name = "metadata-scrubber"
+version = "0.1.0"
+description = "Утилита для удаления метаданных из файлов"
+authors = ["Denis"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.10"
+Pillow = "^10.0"
+watchdog = "^3.0"
+pywin32 = "^300"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
