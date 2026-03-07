@@ -166,8 +166,8 @@ class ModernWindow(tk.Tk):
 
         
         # Привязка событий для кнопки настроек
-        self.settings_button.bind("<Enter>", lambda e: self.settings_button.config(fg="#ffffff"))
-        self.settings_button.bind("<Leave>", lambda e: self.settings_button.config(fg="#888888"))
+        # self.settings_button.bind("<Enter>", lambda e: self.settings_button.config(fg="#ffffff"))
+        # self.settings_button.bind("<Leave>", lambda e: self.settings_button.config(fg="#888888"))
         
         # Обработка закрытия окна
         self.protocol("WM_DELETE_WINDOW", self._on_closing)
@@ -225,7 +225,8 @@ class ModernWindow(tk.Tk):
                 fg="#000000"
             )
             self.pulse_active = True
-            self._start_pulse_animation()
+            # Отключаем анимацию пульсации по решению пользователя
+            # self._start_pulse_animation()
             
             if hasattr(self, 'on_protection_enabled') and self.on_protection_enabled:
                 self.on_protection_enabled()
@@ -241,33 +242,34 @@ class ModernWindow(tk.Tk):
             if hasattr(self, 'on_protection_disabled') and self.on_protection_disabled:
                 self.on_protection_disabled()
 
-    def _start_pulse_animation(self):
-        """
-        Запускает анимацию пульсации вокруг кнопки.
-        """
-        if self.pulse_active:
-            # Изменяем прозрачность обводки (имитация пульсации)
-            self.protection_button.config(
-                highlightthickness=3,
-                highlightbackground=self.config.accent_color,
-                highlightcolor=self.config.accent_color
-            )
-            
-            # Меняем толщину обводки для эффекта пульсации
-            thickness = 2 + (self.pulse_alpha * 3)
-            self.protection_button.config(highlightthickness=int(thickness))
-            
-            # Обновляем альфа-канал
-            self.pulse_alpha += self.pulse_direction
-            if self.pulse_alpha > 1.0:
-                self.pulse_alpha = 1.0
-                self.pulse_direction = -0.02
-            elif self.pulse_alpha < 0.3:
-                self.pulse_alpha = 0.3
-                self.pulse_direction = 0.02
+    # Метод _start_pulse_animation был отключен по решению пользователя
+    # def _start_pulse_animation(self):
+    #     """
+    #     Запускает анимацию пульсации вокруг кнопки.
+    #     """
+    #     if self.pulse_active:
+    #         # Изменяем прозрачность обводки (имитация пульсации)
+    #         self.protection_button.config(
+    #             highlightthickness=3,
+    #             highlightbackground=self.config.accent_color,
+    #             highlightcolor=self.config.accent_color
+    #         )
+    #         
+    #         # Меняем толщину обводки для эффекта пульсации
+    #         thickness = 2 + (self.pulse_alpha * 3)
+    #         self.protection_button.config(highlightthickness=int(thickness))
+    #         
+    #         # Обновляем альфа-канал
+    #         self.pulse_alpha += self.pulse_direction
+    #         if self.pulse_alpha > 1.0:
+    #             self.pulse_alpha = 1.0
+    #             self.pulse_direction = -0.02
+    #         elif self.pulse_alpha < 0.3:
+    #             self.pulse_alpha = 0.3
+    #             self.pulse_direction = 0.02
 
-            # Планируем следующий кадр анимации
-            self.after(50, self._start_pulse_animation)
+    #         # Планируем следующий кадр анимации
+    #         self.after(50, self._start_pulse_animation)
 
     def _on_closing(self):
         """

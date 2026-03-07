@@ -15,7 +15,7 @@ sys.path.append(str(project_root))
 
 from src.metadata_scrubber import MetadataScrubber
 from src.clipboard_monitor import ClipboardMonitor
-from src.notification import NotificationManager
+# from src.notification import NotificationManager  # Модуль отключен по решению пользователя
 from src.ui import ModernWindow
 from src.tray_manager import TrayManager
 
@@ -41,7 +41,6 @@ def main():
     # Создаем экземпляры компонентов
     scrubber = MetadataScrubber()
     clipboard_monitor = ClipboardMonitor()
-    notification_manager = NotificationManager()
     ui = ModernWindow("Metadata Scrubber")
     
     # Настройка коллбэков для UI
@@ -68,12 +67,12 @@ def main():
                 stats = scrubber.get_statistics()
                 ui.update_stats(stats)
                 
-                # Показываем уведомление
-                notification_manager.show_simple_notification(
-                    "Метаданные удалены",
-                    "EXIF, GPS, IPTC и другие метаданные успешно удалены",
-                    timeout=2000
-                )
+                # Уведомления отключены по решению пользователя
+                # notification_manager.show_simple_notification(
+                #     "Метаданные удалены",
+                #     "EXIF, GPS, IPTC и другие метаданные успешно удалены",
+                #     timeout=2000
+                # )
                 
                 logger.info(f"Метаданные удалены из файла: {file_path}")
 
@@ -107,7 +106,6 @@ def main():
     
     # Очистка ресурсов
     clipboard_monitor.stop()
-    notification_manager.cleanup()
     
     # Остановка иконки в трее
     if 'tray_manager' in locals() and tray_manager.is_running():
