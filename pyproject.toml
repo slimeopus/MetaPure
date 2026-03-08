@@ -2,7 +2,7 @@
 name = "MetaPure"
 version = "0.1.0"
 description = "Утилита для удаления метаданных из файлов"
-authors = ["Denis"]
+authors = ["slimeopus"]
 license = "MIT"
 
 [tool.poetry.dependencies]
