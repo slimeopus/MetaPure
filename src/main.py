@@ -18,6 +18,7 @@ from src.clipboard_monitor import ClipboardMonitor
 # from src.notification import NotificationManager  # Модуль отключен по решению пользователя
 from src.ui import ModernWindow
 from src.tray_manager import TrayManager
+from src.settings import SettingsManager
 
 # Настройка логирования
 logging.basicConfig(
@@ -36,12 +37,13 @@ def main():
     """
     Основная функция приложения.
     """
-    logger.info("Запуск приложения Metadata Scrubber")
+    logger.info("Запуск приложения MetaPure")
     
     # Создаем экземпляры компонентов
+    settings_manager = SettingsManager()
     scrubber = MetadataScrubber()
-    clipboard_monitor = ClipboardMonitor()
-    ui = ModernWindow("Metadata Scrubber")
+    clipboard_monitor = ClipboardMonitor(settings_manager)
+    ui = ModernWindow("MetaPure")
     
     # Настройка коллбэков для UI
     def on_protection_enabled():

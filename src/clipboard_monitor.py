@@ -9,6 +9,8 @@ from pathlib import Path
 from typing import List, Callable
 import logging
 import ctypes
+import os
+from settings import SettingsManager
 
 logger = logging.getLogger(__name__)
 
@@ -18,12 +20,56 @@ class ClipboardMonitor:
     Класс для мониторинга буфера обмена Windows.
     """
 
-    def __init__(self):
+    def __init__(self, settings_manager=None):
         self.is_monitoring = False
         self.last_clipboard_files = []
         self.on_file_copied = None  # Коллбэк для обработки скопированных файлов
         self.monitor_thread = None
         self.pause_event = threading.Event()  # Для паузы мониторинга
+        self.settings = settings_manager or SettingsManager()
+
+    def _is_valid_file_path(self, file_path: Path) -> bool:
+        """
+        Проверяет, является ли путь к файлу безопасным для обработки.
+
+        Args:
+            file_path: Путь к файлу
+
+        Returns:
+            True если путь безопасен, иначе False
+        """
+        try:
+            # Проверка на абсолютный путь
+            if not file_path.is_absolute():
+                logger.warning(f"Относительный путь в буфере обмена: {file_path}")
+                return False
+
+            # Преобразуем путь в нормализованный абсолютный путь
+            resolved_path = file_path.resolve()
+
+            # Проверка на символические и жесткие ссылки
+            if file_path.is_symlink() or os.stat(file_path).st_ino != os.stat(resolved_path).st_ino:
+                logger.warning(f"Обнаружена ссылка в буфере обмена: {file_path}")
+                return False
+
+            # Получаем системную директорию
+            system_root = Path(os.environ['WINDIR']).resolve()
+            
+            # Проверка, не находится ли файл в системной директории
+            if resolved_path.is_relative_to(system_root):
+                logger.warning(f"Файл в системной директории: {file_path}")
+                return False
+
+            # Проверка существования файла
+            if not resolved_path.exists() or not resolved_path.is_file():
+                logger.warning(f"Файл не существует или не является файлом: {file_path}")
+                return False
+
+            return True
+            
+        except Exception as e:
+            logger.error(f"Ошибка при проверке пути {file_path}: {e}")
+            return False
 
     def _get_clipboard_files(self) -> List[Path]:
         """
@@ -41,17 +87,28 @@ class ClipboardMonitor:
                 # Получаем список файлов из буфера обмена
                 file_list = win32clipboard.GetClipboardData(win32clipboard.CF_HDROP)
                 
-                # Используем ctypes для доступа к DragQueryFile
-                # Получаем количество файлов
-                # Альтернативный способ получения файлов из буфера обмена
-                try:
-                    file_list = win32clipboard.GetClipboardData(win32clipboard.CF_HDROP)
-                    for file_path in file_list:
-                        if file_path:
-                            files.append(Path(file_path))
-                except Exception as e:
-                    logger.error(f"Ошибка при обработке списка файлов из буфера обмена: {e}")
-                        
+                # Проверяем количество файлов
+                if len(file_list) > self.settings.get('max_files_per_copy', 100):
+                    logger.warning(f"Слишком много файлов в буфере обмена: {len(file_list)}. Ограничение: {self.settings.get('max_files_per_copy', 100)}")
+                    return []
+                
+                # Проверяем размер каждого файла
+                for file_path in file_list:
+                    if file_path:
+                        path_obj = Path(file_path)
+                        # Проверяем размер файла
+                        try:
+                            file_size_mb = path_obj.stat().st_size / (1024 * 1024)
+                            if file_size_mb > self.settings.get('max_file_size_mb', 100):
+                                logger.warning(f"Файл слишком большой для обработки: {file_path} ({file_size_mb:.2f} MB)")
+                                continue
+                        except OSError as e:
+                            logger.error(f"Ошибка при получении размера файла {file_path}: {e}")
+                            continue
+                            
+                        if self._is_valid_file_path(path_obj):
+                            files.append(path_obj)
+                
         except Exception as e:
             logger.error(f"Ошибка при получении файлов из буфера обмена: {e}")
             

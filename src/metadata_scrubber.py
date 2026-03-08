@@ -164,31 +164,47 @@ class MetadataScrubber:
                 format_name = format_map.get(file_path.suffix.lower())
                 
                 if format_name:
-                    # Сохраняем временный файл
+                    # Создаем временный файл
                     temp_path = file_path.with_suffix(file_path.suffix + '.temp')
-                    image_without_exif.save(temp_path, format=format_name)
+                    temp_created = False
+                    try:
+                        # Сохраняем временный файл
+                        image_without_exif.save(temp_path, format=format_name)
+                        temp_created = True
+                        
+                        # Заменяем оригинальный файл
+                        shutil.move(str(temp_path), str(file_path))
+                        
+                        # Обновляем статистику
+                        self.cleaned_files += 1
+                        self.last_action = file_path.name
+                        
+                        # Обновляем статистику по категориям
+                        original_metadata = self._get_file_metadata(file_path)
+                        for tag in original_metadata:
+                            if self._is_gps_tag(tag) and 'location' in categories_to_remove:
+                                self.removed_geotags += 1
+                            elif self._is_device_tag(tag) and 'device_info' in categories_to_remove:
+                                self.removed_device_info += 1
+                            elif self._is_software_tag(tag) and 'software' in categories_to_remove:
+                                self.removed_software_info += 1
+                            elif self._is_personal_tag(tag) and 'personal' in categories_to_remove:
+                                self.removed_personal_info += 1
+                        
+                        logger.info(f"Метаданные удалены из {file_path}")
+                        return True
                     
-                    # Заменяем оригинальный файл
-                    shutil.move(str(temp_path), str(file_path))
-                    
-                    # Обновляем статистику
-                    self.cleaned_files += 1
-                    self.last_action = file_path.name
-                    
-                    # Обновляем статистику по категориям
-                    original_metadata = self._get_file_metadata(file_path)
-                    for tag in original_metadata:
-                        if self._is_gps_tag(tag) and 'location' in categories_to_remove:
-                            self.removed_geotags += 1
-                        elif self._is_device_tag(tag) and 'device_info' in categories_to_remove:
-                            self.removed_device_info += 1
-                        elif self._is_software_tag(tag) and 'software' in categories_to_remove:
-                            self.removed_software_info += 1
-                        elif self._is_personal_tag(tag) and 'personal' in categories_to_remove:
-                            self.removed_personal_info += 1
-                    
-                    logger.info(f"Метаданные удалены из {file_path}")
-                    return True
+                    except Exception as e:
+                        logger.error(f"Ошибка при сохранении временного файла или замене оригинала: {e}")
+                        return False
+                        
+                    finally:
+                        # Удаляем временный файл, если он был создан
+                        if temp_created and temp_path.exists():
+                            try:
+                                os.unlink(temp_path)
+                            except Exception as e:
+                                logger.warning(f"Не удалось удалить временный файл {temp_path}: {e}")
                 else:
                     logger.error(f"Неподдерживаемый формат изображения: {file_path.suffix}")
                     return False

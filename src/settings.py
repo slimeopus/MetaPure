@@ -20,7 +20,9 @@ class SettingsManager:
             'categories_to_remove': ['location', 'device_info', 'software', 'personal'],
             'auto_clean_on_paste': True,
             'show_notifications': True,
-            'smart_preview': False
+            'smart_preview': False,
+            'max_files_per_copy': 100,
+            'max_file_size_mb': 100
         }
         
         # Создаем директорию для конфигурации, если её нет
