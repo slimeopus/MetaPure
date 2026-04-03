@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "MetaPure"
-version = "0.3.0"
+version = "0.5.0"
 description = "Утилита для удаления метаданных из файлов"
 authors = ["slimeopus"]
 license = "MIT"
@@ -10,6 +10,8 @@ python = "^3.10"
 Pillow = "^10.0"
 watchdog = "^3.0"
 pywin32 = "^300"  # Используется для интеграции с системным треем Windows, но не для уведомлений
+pypdf = "^4.0"
+python-docx = "^0.8.11"
 
 [build-system]
 requires = ["poetry-core"]
