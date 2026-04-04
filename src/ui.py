@@ -14,6 +14,18 @@ from pathlib import Path
 import json
 import os
 
+# Добавляем путь к src в sys.path для корректной работы при сборке
+if getattr(sys, 'frozen', False):
+    # При работе с PyInstaller
+    application_path = os.path.dirname(sys.executable)
+else:
+    # При обычном запуске
+    application_path = os.path.dirname(os.path.abspath(__file__))
+
+src_path = os.path.join(application_path, 'src')
+if src_path not in sys.path:
+    sys.path.append(src_path)
+
 # Для поддержки высокого DPI
 ctypes.windll.shcore.SetProcessDpiAwareness(1)
 
@@ -58,7 +70,7 @@ class ModernWindow(tk.Tk):
             
         return default
 
-    def __init__(self, title: str = "Metadata Scrubber", config: UIConfig = None):
+    def __init__(self, title: str = "MetaPure", config: UIConfig = None):
         super().__init__()
         
         self.config = config or UIConfig()
@@ -121,7 +133,7 @@ class ModernWindow(tk.Tk):
         # Заголовок
         self.title_label = tk.Label(
             self.main_frame,
-            text="Metadata Scrubber",
+            text="MetaPure",
             font=(self.config.font_family, 16, "bold"),
             bg=self.config.bg_color,
             fg=self.config.fg_color
